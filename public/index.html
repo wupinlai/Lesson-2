@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台灣中央氣象署 Web GIS 天氣預報系統</title>
+  <meta name="description" content="結合中央氣象署 CWA 開放資料與 Leaflet.js 的互動式 Web GIS 全台天氣預報視覺化系統">
+
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 頂部毛玻璃導覽列 -->
+    <header class="glass-header" id="main-header">
+      <div class="brand-section">
+        <div class="brand-icon-wrapper" id="brand-logo">
+          🌦️
+        </div>
+        <div>
+          <h1 class="brand-title">台灣天氣 Web GIS 預報</h1>
+          <div class="brand-subtitle">
+            <span class="badge-status">CWA 即時同步</span>
+            <span id="update-time">更新時間: 讀取中...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 時段切換控制列 -->
+      <nav class="timeslot-selector" id="timeslot-container" aria-label="天氣預報時段切換">
+        <!-- 由 app.js 動態產生按鈕 -->
+      </nav>
+
+      <!-- 快速搜尋與功能區 -->
+      <div class="header-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="county-search" placeholder="搜尋全台縣市..." autocomplete="off" aria-label="搜尋縣市">
+        </div>
+      </div>
+    </header>
+
+    <!-- Leaflet Web GIS 全螢幕地圖 -->
+    <main id="map" role="region" aria-label="台灣氣象互動地圖"></main>
+
+    <!-- 浮動側邊詳細資訊卡 (Weather Detail Drawer) -->
+    <aside class="weather-drawer" id="weather-drawer" aria-label="縣市天氣詳細資訊">
+      <div class="drawer-header">
+        <div>
+          <h2 class="drawer-county" id="drawer-county-name">臺北市</h2>
+          <div class="drawer-condition" id="drawer-wx">多雲時晴</div>
+        </div>
+        <button class="close-drawer-btn" id="close-drawer-btn" aria-label="關閉詳情卡">✕</button>
+      </div>
+
+      <!-- 主要氣溫展示 -->
+      <div class="primary-metrics">
+        <div>
+          <div class="temp-huge">
+            <span id="drawer-avg-temp">26</span><span class="temp-unit">°C</span>
+          </div>
+          <div class="temp-range-text">預測區間: <span id="drawer-temp-range">24°C ~ 28°C</span></div>
+        </div>
+        <div class="weather-big-icon" id="drawer-icon">⛅</div>
+      </div>
+
+      <!-- 降雨與舒適度網格 -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-icon">☔</span>
+          <div>
+            <div class="metric-label">降雨機率</div>
+            <div class="metric-val" id="drawer-pop">20%</div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <span class="metric-icon">🍃</span>
+          <div>
+            <div class="metric-label">體感舒適度</div>
+            <div class="metric-val" id="drawer-ci">舒適</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 36小時時段趨勢 -->
+      <div class="forecast-timeline">
+        <div class="timeline-title">36 小時預報趨勢</div>
+        <div id="drawer-timeline">
+          <!-- 由 app.js 動態渲染 -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- 底部全台統計列 -->
+    <footer class="glass-footer" id="main-footer">
+      <div class="stat-item">
+        <span class="stat-tag">全台均溫:</span>
+        <span class="stat-bold" id="stat-avg-temp">--°C</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-tag">最高溫:</span>
+        <span class="stat-bold" id="stat-max-temp">--</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-tag">最低溫:</span>
+        <span class="stat-bold" id="stat-min-temp">--</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-tag">降雨警戒:</span>
+        <span class="stat-bold" id="stat-rain-alert">--</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Leaflet.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Application JS -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Environment variables
+.env
+
+# SQLite local database
+data/weather.db
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
