@@ -1,0 +1,17 @@
+{
+  "name": "台灣中央氣象署 Web GIS 預報系統",
+  "short_name": "台灣天氣GIS",
+  "description": "結合中央氣象署開放資料與 Leaflet.js 的互動式 Web GIS 天氣預報系統",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌦️</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

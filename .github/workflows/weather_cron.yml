@@ -1,0 +1,51 @@
+name: Scheduled Weather Data Ingestion
+
+on:
+  schedule:
+    # 每 6 小時執行一次 (UTC 00:00, 06:00, 12:00, 18:00，對應台灣時間 08:00, 14:00, 20:00, 02:00)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # 支援在 GitHub 介面手動點擊觸發
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 檢出儲存庫代碼
+        uses: actions/checkout@v4
+
+      - name: 設定 Python 環境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安裝相依套件
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 執行氣象資料擷取腳本
+        env:
+          CWA_API_KEY: ${{ secrets.CWA_API_KEY }}
+          CWA_API_URL: https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001
+        run: |
+          python fetch_weather.py
+
+      - name: 檢查並提交更新
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # 檢查是否有 weather.json 異動
+          if git status --porcelain data/weather.json public/data/weather.json | grep -q .; then
+            echo "檢測到最新氣象資料，進行 Commit 與 Push..."
+            git add data/weather.json public/data/weather.json
+            git commit -m "chore(data): sync latest CWA weather data [skip ci]"
+            git push origin main
+          else
+            echo "氣象資料無顯著異動，無需 Commit。"
+          fi

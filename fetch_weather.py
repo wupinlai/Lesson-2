@@ -146,6 +146,51 @@ def fetch_from_cwa():
         return None
 
 
+def fetch_cwa_warnings():
+    """從中央氣象署抓取最新天氣警特報 (W-C0033-001)"""
+    if not API_KEY or API_KEY == "YOUR_CWA_API_KEY_HERE" or not REQUESTS_AVAILABLE:
+        # 回退示範特報
+        return [
+            {
+                "hazard": "陸上強風特報",
+                "level": "黃色警戒",
+                "title": "東北風增強 沿海注意強陣風",
+                "description": "東北風明顯偏強，恆春半島、綠島、蘭嶼及金門、馬祖易有 9 至 10 級強陣風，沿海空曠地區亦有較強陣風，鄰近海域並有較大風浪，請特別注意。",
+                "affected_counties": ["新北市", "屏東縣", "臺東縣", "金門縣", "連江縣", "澎湖縣"],
+                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+            }
+        ]
+
+    warning_url = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/W-C0033-001"
+    params = {"Authorization": API_KEY, "format": "JSON"}
+    try:
+        resp = requests.get(warning_url, params=params, timeout=10)
+        if resp.ok:
+            w_data = resp.json()
+            records = w_data.get("records", {}).get("record", [])
+            warnings = []
+            for r in records:
+                hazard_info = r.get("datasetInfo", {})
+                title = hazard_info.get("datasetDescription", "天氣特報")
+                contents = r.get("contents", {}).get("content", {})
+                desc = contents.get("contentText", "")
+                locations = [loc.get("locationName") for loc in r.get("hazardConditions", {}).get("hazards", [{}])[0].get("info", {}).get("affectedAreas", {}).get("location", [])]
+                warnings.append({
+                    "hazard": title,
+                    "level": "特報警戒",
+                    "title": title,
+                    "description": desc,
+                    "affected_counties": locations,
+                    "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+                })
+            if warnings:
+                return warnings
+    except Exception as e:
+        logger.warning(f"擷取 CWA 警特報時發生異常 (非致命): {e}")
+
+    return []
+
+
 def generate_mock_data():
     """當無 API Key 時，產生逼真且完整的 22 縣市 36 小時天氣預報模擬資料"""
     logger.info("正在產生全台 22 縣市模擬氣象數據...")
@@ -277,7 +322,7 @@ def save_to_database(conn, records):
     logger.info(f"成功將 {inserted_count} 筆天氣預報寫入 SQLite 資料庫。")
 
 
-def export_json(records, is_mock: bool, output_paths: list):
+def export_json(records, is_mock: bool, output_paths: list, warnings: list = None):
     """匯出格式化 JSON 檔案供 Web GIS 前端載入"""
     # 建立整合地理資訊與多時段的標準 JSON
     features = []
@@ -325,6 +370,7 @@ def export_json(records, is_mock: bool, output_paths: list):
             "total_counties": len(features),
             "time_slots": time_slots
         },
+        "warnings": warnings or [],
         "data": features
     }
 
@@ -345,7 +391,11 @@ def main():
     else:
         records, is_mock = generate_mock_data()
 
-    # 2. 儲存至 SQLite
+    # 2. 抓取警特報資料
+    warnings = fetch_cwa_warnings()
+    logger.info(f"成功擷取 {len(warnings)} 則天氣警特報資訊。")
+
+    # 3. 儲存至 SQLite
     db_file = os.path.join(os.path.dirname(__file__), "data", "weather.db")
     conn = init_database(db_file)
     try:
@@ -353,10 +403,10 @@ def main():
     finally:
         conn.close()
 
-    # 3. 同步輸出 JSON
+    # 4. 同步輸出 JSON
     json_path_data = os.path.join(os.path.dirname(__file__), "data", "weather.json")
     json_path_public = os.path.join(os.path.dirname(__file__), "public", "data", "weather.json")
-    export_json(records, is_mock, [json_path_data, json_path_public])
+    export_json(records, is_mock, [json_path_data, json_path_public], warnings=warnings)
 
     logger.info("=== 資料擷取與輸出程序全部完成！===")
 
