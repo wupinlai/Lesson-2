@@ -2,9 +2,11 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>台灣中央氣象署 Web GIS 天氣預報系統</title>
   <meta name="description" content="結合中央氣象署 CWA 開放資料與 Leaflet.js 的互動式 Web GIS 全台天氣預報視覺化系統">
+  <meta name="theme-color" content="#090d16">
+  <link rel="manifest" href="manifest.json">
 
   <!-- Google Fonts: Outfit & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,13 +24,13 @@
     <!-- 頂部毛玻璃導覽列 -->
     <header class="glass-header" id="main-header">
       <div class="brand-section">
-        <div class="brand-icon-wrapper" id="brand-logo">
+        <div class="brand-icon-wrapper" id="brand-logo" title="重設地圖全台視野">
           🌦️
         </div>
         <div>
           <h1 class="brand-title">台灣天氣 Web GIS 預報</h1>
           <div class="brand-subtitle">
-            <span class="badge-status">CWA 即時同步</span>
+            <span class="badge-status" id="badge-source">CWA 即時同步</span>
             <span id="update-time">更新時間: 讀取中...</span>
           </div>
         </div>
@@ -41,12 +43,42 @@
 
       <!-- 快速搜尋與功能區 -->
       <div class="header-actions">
+        <!-- 特報警示按鈕 (有警特報時動態顯示) -->
+        <button id="warning-pill-btn" class="warning-pill-btn hidden" title="查看天氣警特報">
+          <span class="warning-dot"></span>
+          <span id="warning-btn-text">天氣特報 (1)</span>
+        </button>
+
         <div class="search-box">
           <span class="search-icon">🔍</span>
           <input type="text" id="county-search" placeholder="搜尋全台縣市..." autocomplete="off" aria-label="搜尋縣市">
+          <button id="clear-search-btn" class="clear-search-btn hidden" aria-label="清除搜尋">✕</button>
+          <div id="search-suggestions" class="search-suggestions hidden"></div>
         </div>
       </div>
     </header>
+
+    <!-- 地圖快速控制懸浮鈕群 (左側) -->
+    <div class="map-quick-controls" id="map-quick-controls">
+      <button class="map-ctrl-btn" id="btn-reset-view" title="重置台灣全景視野">
+        <span>🗺️</span>
+        <span class="btn-tooltip">全台視野</span>
+      </button>
+      <button class="map-ctrl-btn" id="btn-toggle-drawer" title="展開/收合氣象詳情卡">
+        <span>📊</span>
+        <span class="btn-tooltip">氣象詳情</span>
+      </button>
+    </div>
+
+    <!-- 縣市分區快速篩選標籤 -->
+    <div class="region-filter-bar" id="region-filter-bar" aria-label="縣市分區切換">
+      <button class="region-chip active" data-region="all">全島縣市</button>
+      <button class="region-chip" data-region="north">北部</button>
+      <button class="region-chip" data-region="central">中部</button>
+      <button class="region-chip" data-region="south">南部</button>
+      <button class="region-chip" data-region="east">東部</button>
+      <button class="region-chip" data-region="islands">離島</button>
+    </div>
 
     <!-- Leaflet Web GIS 全螢幕地圖 -->
     <main id="map" role="region" aria-label="台灣氣象互動地圖"></main>
@@ -55,6 +87,7 @@
     <aside class="weather-drawer" id="weather-drawer" aria-label="縣市天氣詳細資訊">
       <div class="drawer-header">
         <div>
+          <div class="drawer-region-tag" id="drawer-region-tag">北部地區</div>
           <h2 class="drawer-county" id="drawer-county-name">臺北市</h2>
           <div class="drawer-condition" id="drawer-wx">多雲時晴</div>
         </div>
@@ -90,31 +123,51 @@
         </div>
       </div>
 
-      <!-- 36小時時段趨勢 -->
-      <div class="forecast-timeline">
-        <div class="timeline-title">36 小時預報趨勢</div>
-        <div id="drawer-timeline">
+      <!-- 36小時時段趨勢 (視覺化圖表與列表) -->
+      <div class="forecast-timeline-wrapper">
+        <div class="timeline-header">
+          <span class="timeline-title">36 小時預報趨勢</span>
+          <span class="timeline-hint">溫差與降雨分布</span>
+        </div>
+        <div id="drawer-timeline" class="drawer-timeline">
           <!-- 由 app.js 動態渲染 -->
         </div>
       </div>
     </aside>
 
+    <!-- 天氣警特報詳細 Modal 彈窗 -->
+    <div id="warning-modal" class="warning-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="warning-modal-title">
+      <div class="warning-modal-card">
+        <div class="modal-header">
+          <h3 id="warning-modal-title">⚠️ 中央氣象署 即時天氣警特報</h3>
+          <button class="close-modal-btn" id="close-warning-modal-btn" aria-label="關閉警報視窗">✕</button>
+        </div>
+        <div class="modal-body" id="warning-modal-content">
+          <!-- 由 app.js 動態渲染 -->
+        </div>
+      </div>
+    </div>
+
     <!-- 底部全台統計列 -->
     <footer class="glass-footer" id="main-footer">
       <div class="stat-item">
+        <span class="stat-icon">🌡️</span>
         <span class="stat-tag">全台均溫:</span>
         <span class="stat-bold" id="stat-avg-temp">--°C</span>
       </div>
       <div class="stat-item">
+        <span class="stat-icon">🔥</span>
         <span class="stat-tag">最高溫:</span>
         <span class="stat-bold" id="stat-max-temp">--</span>
       </div>
       <div class="stat-item">
+        <span class="stat-icon">❄️</span>
         <span class="stat-tag">最低溫:</span>
         <span class="stat-bold" id="stat-min-temp">--</span>
       </div>
       <div class="stat-item">
-        <span class="stat-tag">降雨警戒:</span>
+        <span class="stat-icon">🌧️</span>
+        <span class="stat-tag">降雨警示:</span>
         <span class="stat-bold" id="stat-rain-alert">--</span>
       </div>
     </footer>

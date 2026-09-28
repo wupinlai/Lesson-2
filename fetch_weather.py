@@ -328,12 +328,43 @@ def export_json(records, is_mock: bool, output_paths: list, warnings: list = Non
     features = []
     update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # 提取共有時段標籤
+    # 提取共有時段標籤與友善名稱
     time_slots = []
+    def format_slot_name(start_str: str, end_str: str, idx: int) -> str:
+        try:
+            # 支援 'YYYY-MM-DD HH:MM:SS' 或 ISO 格式
+            clean_str = start_str.replace("T", " ")[:19]
+            dt = datetime.strptime(clean_str, "%Y-%m-%d %H:%M:%S")
+            hour = dt.hour
+            if idx == 0:
+                if 5 <= hour < 12:
+                    return "今日白天"
+                elif 12 <= hour < 18:
+                    return "今日午後"
+                else:
+                    return "今晚至明晨"
+            elif idx == 1:
+                if 5 <= hour < 12:
+                    return "明日白天"
+                elif 12 <= hour < 18:
+                    return "明日下午"
+                else:
+                    return "明日晚上"
+            elif idx == 2:
+                if 5 <= hour < 18:
+                    return "後日白天"
+                else:
+                    return "後日晚上"
+            return f"時段 {idx + 1}"
+        except Exception:
+            default_labels = ["今晚至明晨", "明日白天", "明日晚上"]
+            return default_labels[idx] if idx < len(default_labels) else f"時段 {idx + 1}"
+
     if records and records[0]["forecasts"]:
         for idx, fc in enumerate(records[0]["forecasts"]):
             time_slots.append({
                 "index": idx,
+                "name": format_slot_name(fc["start_time"], fc["end_time"], idx),
                 "start": fc["start_time"],
                 "end": fc["end_time"]
             })

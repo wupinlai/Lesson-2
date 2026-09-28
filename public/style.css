@@ -7,10 +7,10 @@
 :root {
   /* 品牌與主題色 */
   --bg-dark: #090d16;
-  --bg-card: rgba(18, 24, 38, 0.75);
-  --bg-card-hover: rgba(28, 38, 60, 0.85);
+  --bg-card: rgba(15, 23, 42, 0.82);
+  --bg-card-hover: rgba(30, 41, 59, 0.9);
   --border-glass: rgba(255, 255, 255, 0.12);
-  --border-active: rgba(56, 189, 248, 0.5);
+  --border-active: rgba(56, 189, 248, 0.6);
   
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
@@ -24,8 +24,8 @@
   --accent-rose: #f43f5e;
 
   /* 陰影與毛玻璃效果 */
-  --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.05);
-  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.25);
+  --shadow-lg: 0 12px 36px -4px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+  --shadow-glow: 0 0 24px rgba(56, 189, 248, 0.35);
   --blur-glass: blur(16px);
   --radius-sm: 8px;
   --radius-md: 14px;
@@ -53,6 +53,10 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* 主容器 */
 #app {
   position: relative;
@@ -69,22 +73,23 @@ html, body {
   background-color: #070a11;
 }
 
-/* 自訂地圖瓦片濾鏡（讓地圖呈現沉浸式高質感深色風格） */
-.dark-tiles {
-  filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.35) brightness(0.7);
+/* 免 Key OpenStreetMap 深色主題濾鏡 */
+.dark-tiles,
+.leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
 /* 頂部導覽列 (Glassmorphism Navbar) */
 .glass-header {
   position: absolute;
-  top: 20px;
+  top: 18px;
   left: 20px;
   right: 20px;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 12px 22px;
   background: var(--bg-card);
   backdrop-filter: var(--blur-glass);
   -webkit-backdrop-filter: var(--blur-glass);
@@ -92,13 +97,16 @@ html, body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
+  gap: 16px;
   transition: all var(--transition-normal);
 }
 
 .brand-section {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .brand-icon-wrapper {
@@ -111,6 +119,11 @@ html, body {
   justify-content: center;
   font-size: 24px;
   box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+  transition: transform var(--transition-fast);
+}
+
+.brand-icon-wrapper:hover {
+  transform: scale(1.08) rotate(6deg);
 }
 
 .brand-title {
@@ -120,6 +133,7 @@ html, body {
   background: linear-gradient(90deg, #ffffff, #93c5fd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .brand-subtitle {
@@ -128,6 +142,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .badge-status {
@@ -161,11 +176,13 @@ html, body {
 .timeslot-selector {
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.4);
   padding: 4px;
   border-radius: var(--radius-full);
   border: 1px solid rgba(255, 255, 255, 0.08);
   gap: 4px;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .slot-btn {
@@ -200,6 +217,43 @@ html, body {
   gap: 12px;
 }
 
+/* 特報警示按鈕 */
+.warning-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(245, 158, 11, 0.25));
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  animation: warning-glow 2s infinite ease-in-out;
+}
+
+.warning-pill-btn:hover {
+  background: rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+}
+
+.warning-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+@keyframes warning-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.5); }
+}
+
+/* 搜尋框與自動完成建議 */
 .search-box {
   position: relative;
   display: flex;
@@ -207,10 +261,10 @@ html, body {
 }
 
 .search-box input {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-full);
-  padding: 8px 14px 8px 36px;
+  padding: 8px 32px 8px 36px;
   color: var(--text-primary);
   font-size: 0.85rem;
   width: 170px;
@@ -221,7 +275,7 @@ html, body {
   outline: none;
   width: 210px;
   border-color: var(--accent-cyan);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
 }
 
 .search-icon {
@@ -232,13 +286,166 @@ html, body {
   pointer-events: none;
 }
 
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px;
+}
+
+.clear-search-btn:hover {
+  color: #fff;
+}
+
+/* 搜尋下拉選單 */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.suggestion-item {
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover, .suggestion-item.active {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+}
+
+/* 左側懸浮控制鈕群 */
+.map-quick-controls {
+  position: absolute;
+  top: 96px;
+  left: 20px;
+  z-index: 998;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.map-ctrl-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-fast);
+}
+
+.map-ctrl-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+}
+
+.btn-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border-glass);
+}
+
+.map-ctrl-btn:hover .btn-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 縣市分區切換標籤列 (左下方或頂部下方) */
+.region-filter-bar {
+  position: absolute;
+  bottom: 74px;
+  left: 20px;
+  z-index: 998;
+  display: flex;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  padding: 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-lg);
+  overflow-x: auto;
+  max-width: calc(100vw - 40px);
+}
+
+.region-chip {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.region-chip:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.region-chip.active {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-cyan);
+  font-weight: 600;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
 /* 浮動側邊詳細資訊卡 (Weather Detail Drawer) */
 .weather-drawer {
   position: absolute;
   top: 96px;
   right: 20px;
-  width: 360px;
-  max-height: calc(100vh - 130px);
+  width: 370px;
+  max-height: calc(100vh - 180px);
   z-index: 999;
   background: var(--bg-card);
   backdrop-filter: var(--blur-glass);
@@ -249,13 +456,13 @@ html, body {
   padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   overflow-y: auto;
   transition: transform var(--transition-normal), opacity var(--transition-normal);
 }
 
 .weather-drawer.collapsed {
-  transform: translateX(390px);
+  transform: translateX(410px);
   opacity: 0;
   pointer-events: none;
 }
@@ -266,14 +473,22 @@ html, body {
   justify-content: space-between;
 }
 
+.drawer-region-tag {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .drawer-county {
-  font-size: 1.75rem;
+  font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .drawer-condition {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--accent-cyan);
   font-weight: 500;
   margin-top: 2px;
@@ -304,8 +519,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(99, 102, 241, 0.1));
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(99, 102, 241, 0.12));
+  border: 1px solid rgba(56, 189, 248, 0.25);
   border-radius: var(--radius-md);
   padding: 16px 20px;
 }
@@ -327,7 +542,7 @@ html, body {
 .temp-range-text {
   font-size: 0.85rem;
   color: var(--text-secondary);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .weather-big-icon {
@@ -339,11 +554,11 @@ html, body {
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 
 .metric-card {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-sm);
   padding: 12px 14px;
@@ -369,11 +584,17 @@ html, body {
   color: var(--text-primary);
 }
 
-/* 三時段預報列表 */
-.forecast-timeline {
+/* 36小時時段趨勢視覺化 (Timeline & Chart Bars) */
+.forecast-timeline-wrapper {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .timeline-title {
@@ -384,44 +605,198 @@ html, body {
   letter-spacing: 0.05em;
 }
 
-.timeline-item {
+.timeline-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.drawer-timeline {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-card {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
-  font-size: 0.85rem;
   transition: all var(--transition-fast);
 }
 
-.timeline-item:hover {
+.timeline-card:hover {
   background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(56, 189, 248, 0.3);
 }
 
-.timeline-slot-name {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  max-width: 120px;
+.timeline-card.active-slot {
+  border-color: rgba(56, 189, 248, 0.6);
+  background: rgba(56, 189, 248, 0.08);
 }
 
-.timeline-wx {
+.timeline-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.timeline-slot-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.timeline-wx-info {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 0.85rem;
   font-weight: 500;
 }
 
-.timeline-temp {
-  font-weight: 600;
+.timeline-temp-badge {
+  font-weight: 700;
   color: var(--accent-cyan);
+  font-size: 0.9rem;
+}
+
+/* 視覺化降雨進度條 */
+.timeline-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.timeline-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.timeline-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease-out;
+}
+
+.timeline-bar-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: 58px;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+/* 警特報彈窗 Modal */
+.warning-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.warning-modal-card {
+  background: #0f172a;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(239, 68, 68, 0.2);
+  width: 100%;
+  max-width: 540px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+.modal-header h3 {
+  font-size: 1.2rem;
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-modal-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.warning-card-item {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.warning-item-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fca5a5;
+  margin-bottom: 6px;
+}
+
+.warning-item-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.warning-counties-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.warning-county-badge {
+  font-size: 0.75rem;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fecaca;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* 底部全台統計列 (Statistics Bar) */
 .glass-footer {
   position: absolute;
-  bottom: 20px;
+  bottom: 18px;
   left: 20px;
   right: 20px;
   z-index: 998;
@@ -444,6 +819,10 @@ html, body {
   gap: 8px;
 }
 
+.stat-icon {
+  font-size: 1.1rem;
+}
+
 .stat-tag {
   color: var(--text-muted);
 }
@@ -458,7 +837,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1.5px solid rgba(56, 189, 248, 0.4);
@@ -468,7 +847,7 @@ html, body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
   font-family: 'Outfit', sans-serif;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -477,6 +856,14 @@ html, body {
   border-color: var(--accent-cyan);
   box-shadow: 0 8px 25px rgba(56, 189, 248, 0.45);
   background: rgba(15, 23, 42, 1);
+}
+
+.custom-weather-marker.active-selected {
+  border-color: #38bdf8 !important;
+  background: rgba(14, 116, 144, 0.95) !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.7), 0 0 0 3px rgba(56, 189, 248, 0.3) !important;
+  transform: scale(1.12);
+  z-index: 1000 !important;
 }
 
 .marker-icon {
@@ -501,10 +888,10 @@ html, body {
 
 /* 高溫/降雨警示 marker */
 .custom-weather-marker.high-rain {
-  border-color: rgba(99, 102, 241, 0.8);
+  border-color: rgba(99, 102, 241, 0.85);
 }
 .custom-weather-marker.hot {
-  border-color: rgba(245, 158, 11, 0.8);
+  border-color: rgba(245, 158, 11, 0.85);
 }
 
 /* Leaflet Popup 美化 */
@@ -525,6 +912,10 @@ html, body {
 .leaflet-popup-content {
   margin: 14px 18px !important;
   line-height: 1.4 !important;
+}
+
+.popup-box {
+  min-width: 170px;
 }
 
 .popup-title {
@@ -557,8 +948,27 @@ html, body {
   .glass-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 10px 14px;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+  }
+
+  .header-actions {
+    justify-content: space-between;
+  }
+
+  .search-box {
+    flex: 1;
+  }
+
+  .search-box input {
+    width: 100%;
+  }
+
+  .search-box input:focus {
+    width: 100%;
   }
 
   .timeslot-selector {
@@ -567,11 +977,19 @@ html, body {
 
   .weather-drawer {
     top: auto;
-    bottom: 75px;
+    bottom: 65px;
     left: 12px;
     right: 12px;
     width: auto;
     max-height: 48vh;
+    padding: 16px;
+  }
+
+  .region-filter-bar {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
   }
 
   .glass-footer {
@@ -589,11 +1007,16 @@ html, body {
     font-size: 0.75rem;
   }
 
-  .search-box input {
-    width: 100%;
+  .map-quick-controls {
+    top: 165px;
+    left: 12px;
   }
 
-  .search-box input:focus {
-    width: 100%;
+  .weather-big-icon {
+    font-size: 2.5rem;
+  }
+
+  .temp-huge {
+    font-size: 2.3rem;
   }
 }
